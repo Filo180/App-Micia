@@ -4,9 +4,9 @@
   <title>Per te ❤️</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family:sans-serif; text-align:center; margin-top:50px;">
+<body style="font-family:sans-serif; text-align:center; margin-top:50px;background:pink;">
   <h1>Hey ❤️</h1>
-  <p>Se stai leggendo questo… è perché tengo a te.</p>
+  <p>Se stai leggendo questo… è perché tengo molto a te...</p>
 
   <button onclick="mostraMessaggio()">Non premere</button>
 
@@ -16,6 +16,12 @@
     function mostraMessaggio() {
       document.getElementById("msg").style.display = "block";
     }
+  </script>
+  <script>
+    let pass = prompt("Inserisci la password:");
+    if (pass !== "vostradata") {
+      document.body.innerHTML = "Accesso negato";
+      }
   </script>
 </body>
 </html>
