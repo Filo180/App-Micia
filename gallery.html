@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Foto ❤️</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1e1e1e;
+      padding: 20px;
+
+      background: url("foto/sfondo.jpg") center/cover no-repeat fixed;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+
+      background: rgba(255,255,255,0.3); /* schiarisce */
+      backdrop-filter: blur(5px);
+
+      z-index: -1;
+    }
+
+    /* HEADER */
+    h1 {
+      text-align: center;
+      padding: 20px;
+      font-weight: 500;
+    }
+
+    /* GRID */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      padding: 10px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    /* IMMAGINI */
+    .gallery img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    /* MODALE FULLSCREEN */
+    .viewer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+
+      background: rgba(0,0,0,0.9);
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s;
+    }
+
+    .viewer.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .viewer img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+
+    /* BOTTONI */
+    .close, .prev, .next {
+      position: absolute;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .close {
+      top: 20px;
+      right: 30px;
+    }
+
+    .prev {
+      left: 20px;
+    }
+
+    .next {
+      right: 20px;
+    }
+
+    .photo-card {
+      position: relative;
+      border-radius: 15px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* overlay sotto */
+    .overlay {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      padding: 8px;
+
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+      color: white;
+
+      font-size: 11px;
+    }
+
+    .title {
+      font-weight: 500;
+    }
+
+    .date {
+      opacity: 0.7;
+      font-size: 10px;
+    }
+
+    #caption {
+      position: absolute;
+      bottom: 30px;
+      text-align: center;
+      color: white;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Qualcuna delle nostre foto più speciali ❤️📸</h1>
+
+  <div class="gallery" id="gallery"></div>
+
+  <!-- VIEWER -->
+  <div class="viewer" id="viewer">
+    <span class="close" onclick="closeViewer()">✕</span>
+    <span class="prev" onclick="prevImage()">❮</span>
+    <img id="viewerImg">
+    <div id="caption"></div>
+    <span class="next" onclick="nextImage()">❯</span>
+  </div>
+
+    <script>
+    // 🔥 LISTA FOTO (aggiungile qui)
+    const images = [
+      {
+        src: "foto/100g.jpeg",
+        title: "100 Giorni!",
+        date: "11/03/2025"
+      },
+      {
+        src: "foto/armenia.jpeg",
+        title: "Viaggio in Armenia",
+        date: "06/01/2026"
+      },
+      {
+        src: "foto/bacio.jpeg",
+        title: "Un bacio al tramonto",
+        date: "12/11/2025"
+      },
+      {
+        src: "foto/beginning.jpeg",
+        title: "All'inizio del nostro viaggio",
+        date: "02/02/2025"
+      },
+      {
+        src: "foto/ceme.jpeg",
+        title: "Esplorazione al ceme",
+        date: "12/11/2025"
+      },
+      {
+        src: "foto/comple.jpeg",
+        title: "Compleanno speciale",
+        date: "17/06/2025"
+      },
+      {
+        src: "foto/firstTime.jpeg",
+        title: "La nostra prima volta insieme",
+        date: "26/01/2025"
+      },
+      {
+        src: "foto/georgia.jpeg",
+        title: "Viaggio in Georgia",
+        date: "06/01/2026"
+      },
+      {
+        src: "foto/letto.jpeg",
+        title: "Notte in camera",
+        date: "14/03/2026"
+      },
+      {
+        src: "foto/sanleo.jpeg",
+        title: "Escursione a San Leo",
+        date: "07/04/2025"
+      },
+      {
+        src: "foto/silvi.jpeg",
+        title: "Hotel a Silvi",
+        date: "29/08/2025"
+      },
+      {
+        src: "foto/urbex.jpeg",
+        title: "Urbex in città",
+        date: "14/12/2025"
+      }
+    ];
+
+    let currentIndex = 0;
+
+    const gallery = document.getElementById("gallery");
+
+    // CREA GRIGLIA
+    images.forEach((imgData, index) => {
+      const container = document.createElement("div");
+      container.className = "photo-card";
+      container.onclick = () => openViewer(index);
+
+      container.innerHTML = `
+        <img src="${imgData.src}">
+        <div class="overlay">
+          <div class="title">${imgData.title}</div>
+          <div class="date">${imgData.date}</div>
+        </div>
+      `;
+
+      gallery.appendChild(container);
+    });
+
+    // OPEN
+    function openViewer(index) {
+      currentIndex = index;
+
+      document.getElementById("viewerImg").src = images[index].src;
+
+      document.getElementById("caption").innerHTML = `
+        <strong>${images[index].title}</strong><br>
+        ${images[index].date}
+      `;
+
+      document.getElementById("viewer").classList.add("show");
+    }
+
+    // CLOSE
+    function closeViewer() {
+      document.getElementById("viewer").classList.remove("show");
+    }
+
+    function updateViewer() {
+      document.getElementById("viewerImg").src = images[currentIndex].src;
+
+      document.getElementById("caption").innerHTML = `
+        <strong>${images[currentIndex].title}</strong><br>
+        ${images[currentIndex].date}
+      `;
+    }
+
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % images.length;
+      updateViewer();
+    }
+
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      updateViewer();
+    }
+
+    // CHIUDI cliccando fuori
+    document.getElementById("viewer").onclick = function(e) {
+      if (e.target === this) closeViewer();
+    };
+    // SWIPE (mobile)
+    let startX = 0;
+
+    const viewerImg = document.getElementById("viewerImg");
+
+    viewerImg.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+    });
+
+    viewerImg.addEventListener("touchend", e => {
+      const endX = e.changedTouches[0].clientX;
+      const diff = endX - startX;
+      if(diff > 50) prevImage();
+      else if(diff < -50) nextImage();
+    });
+
+  </script>
+
+</body>
+</html>

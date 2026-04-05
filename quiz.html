@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quanto sei furry?</title>
+    <link rel="stylesheet" href="quizStyle.css">
+</head>
+
+<body>
+    <h1>Quanto sei furry? 🐾</h1>
+
+    <div class="quiz-box">
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="question"></div>
+    <div class="answers" id="answers"></div>
+    <div id="result"></div>
+    </div>
+
+    <audio id="clickSound" src="sound/click.mp3"></audio>
+    <audio id="winSound" src="sound/Samsung.mp3"></audio>
+
+    <script>
+        //sblocca audio al primo click (requisito browser)
+    document.addEventListener("click", () => {
+    document.getElementById("clickSound").play().catch(()=>{});
+    }, { once: true });
+    
+    const omgSounds = [
+    "sound/oh_my_god.mp3",
+    "sound/Fart.mp3",
+    "sound/FartReverb.mp3",
+    ];
+
+    const speedImages = [
+    "meme_images/assurdo.jpg",
+    "meme_images/delusione.png",
+    "meme_images/shockedSpeed.jpg"
+    ];
+
+    // 30 DOMANDE ASSURDE
+    const allQuestions = [
+    {q:"Vedi uno scatolone abbandonato per strada. Come reagisci?",a:[
+    ["Proseguo la mia vita normalmente",0],
+    ["Lo guardo con sospetto",3],
+    ["Do un'occhiata dentro, così per curiosità",6],
+    ["Mi ci tuffo dentro e diventa la mia nuova casa",10]
+    ]},
+
+    {q:"Qualcuno fa 'pspsps' nella tua direzione.",a:[
+    ["Continuo a camminare",0],
+    ["Mi giro leggermente confuso",3],
+    ["Cerco chi è stato",6],
+    ["Rispondo automaticamente senza pensarci",10]
+    ]},
+
+    {q:"Ti regalano un paio di orecchie da gatto.",a:[
+    ["Le rifiuto",0],
+    ["Le provo per scherzo",3],
+    ["Le tengo per un po'",6],
+    ["Nuova identità sbloccata",10]
+    ]},
+
+    {q:"Sei da solo a casa.",a:[
+    ["Mi comporto normalmente",0],
+    ["Faccio cose un po' strane",3],
+    ["Parlo da solo",6],
+    ["Emetto versi inspiegabili",10]
+    ]},
+
+    {q:"Ti trovi davanti a uno specchio.",a:[
+    ["Mi sistemo e basta",0],
+    ["Faccio qualche faccia strana",3],
+    ["Inizio a fare cose imbarazzanti",6],
+    ["Performance completa degna di documentario",10]
+    ]},
+
+    {q:"Livello di energia durante la giornata?",a:[
+    ["Costante e tranquillo",0],
+    ["Un po' altalenante",3],
+    ["Spesso molto alto",6],
+    ["Caotico e incontrollabile",10]
+    ]},
+
+    {q:"Ti piace rannicchiarti sotto le coperte?",a:[
+    ["No",0],
+    ["Ogni tanto",3],
+    ["Abbastanza spesso",6],
+    ["Creo un vero e proprio nido",10]
+    ]},
+
+    {q:"Ti capita di fare versi strani senza motivo?",a:[
+    ["Mai",0],
+    ["Raramente",3],
+    ["Spesso",6],
+    ["È praticamente il mio linguaggio principale",10]
+    ]},
+
+    {q:"Vedi un animale particolarmente carino.",a:[
+    ["Carino e basta",0],
+    ["Sorrido",3],
+    ["Voglio accarezzarlo",6],
+    ["Vorrei essere lui",10]
+    ]},
+
+    {q:"Camminata casuale quando sei da solo.",a:[
+    ["Normale",0],
+    ["Un po' strana",3],
+    ["Saltellante",6],
+    ["Zoomies inspiegabili",10]
+    ]},
+
+    {q:"Ti nascondi sotto le coperte?",a:[
+    ["No",0],
+    ["A volte",3],
+    ["Spesso",6],
+    ["È il mio habitat naturale",10]
+    ]},
+
+    {q:"Ti distrai facilmente?",a:[
+    ["No",0],
+    ["Un po'",3],
+    ["Abbastanza",6],
+    ["Ogni cosa cattura la mia attenzione",10]
+    ]},
+
+    {q:"Rumore improvviso alle spalle.",a:[
+    ["Rimango tranquillo",0],
+    ["Mi giro",3],
+    ["Sobbalzo",6],
+    ["Salto come un NPC glitchato",10]
+    ]},
+
+    {q:"Sei sul divano.",a:[
+    ["Seduto normalmente",0],
+    ["In posizione strana",3],
+    ["Contorto",6],
+    ["Ho perso completamente la forma umana",10]
+    ]},
+
+    {q:"Ti stiracchi?",a:[
+    ["Raramente",0],
+    ["Ogni tanto",3],
+    ["Spesso",6],
+    ["In modo sospettosamente animale",10]
+    ]},
+
+    {q:"Momenti di energia improvvisa?",a:[
+    ["No",0],
+    ["Qualche volta",3],
+    ["Spesso",6],
+    ["Esplosioni di caos puro",10]
+    ]},
+
+    {q:"Ti rotoli nel letto?",a:[
+    ["No",0],
+    ["Un po'",3],
+    ["Sì",6],
+    ["Costantemente",10]
+    ]},
+
+    {q:"Parli da solo?",a:[
+    ["Mai",0],
+    ["Raramente",3],
+    ["Spesso",6],
+    ["Conversazioni complete",10]
+    ]},
+
+    {q:"Ti senti osservato?",a:[
+    ["No",0],
+    ["Ogni tanto",3],
+    ["Spesso",6],
+    ["Sono io l'osservatore",10]
+    ]},
+
+    {q:"Sei una persona normale?",a:[
+    ["Assolutamente sì",0],
+    ["Credo di sì",3],
+    ["Ho dei dubbi",6],
+    ["No.",10]
+    ]}
+
+];
+
+    // RANDOM 10 DOMANDE
+    const questions = allQuestions.sort(() => 0.5 - Math.random()).slice(0,10);
+
+    let current = 0;
+    let score = 0;
+    const maxScore = questions.length * 10;
+
+    function loadQuestion(){
+    const q = questions[current];
+    document.getElementById("question").innerText = q.q;
+
+    const answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "";
+
+    q.a.forEach(a=>{
+        const btn = document.createElement("button");
+        btn.innerText = a[0];
+
+        btn.onclick = () => {
+        document.getElementById("clickSound").play();
+
+        score += a[1];
+
+        // 💀 SE RISPOSTA PIÙ FURRY
+        if (a[1] === 10) {
+
+        // 🎧 suono random
+        const sound = new Audio(getRandom(omgSounds));
+        sound.play();
+
+        // 🖼️ immagine random
+        const img = document.getElementById("speedImg");
+        img.src = getRandom(speedImages);
+        img.classList.add("show");
+
+        document.body.classList.add("flash");
+
+        if (navigator.vibrate) navigator.vibrate(100);
+
+        setTimeout(() => {
+            img.classList.remove("show");
+            document.body.classList.remove("flash");
+        }, 800);
+        }
+
+        current++;
+        document.getElementById("progressBar").style.width =
+        (current / questions.length * 100) + "%";
+
+        if (current < questions.length) loadQuestion();
+        else showResult();
+        };
+
+        answersDiv.appendChild(btn);
+    });
+    }
+
+    function showResult() {
+        const percentage = Math.round((score / maxScore) * 100);
+
+        let message = "";
+        let img = "";
+
+        // Determina messaggio e immagine
+        if (percentage < 20) {
+            message = "Umano sospettosamente normale 🤨";
+            img = "meme_images/umano.jpg";
+        } 
+        else if (percentage < 40) {
+            message = "Un po' furry dentro 🐾";
+            img = "meme_images/furry25.jpg";
+        } 
+        else if (percentage < 70) {
+            message = "Furry in negazione 😏";
+            img = "meme_images/furry50.jpg";
+        } 
+        else if (percentage < 90) {
+            message = "FURRY CONFIRMATO 🐺";
+            img = "meme_images/furry80.jpg";
+        } 
+        else if (percentage <= 100) { // Include 100%
+            message = "SEI LETTERALMENTE UN ANIMALE 🐉";
+            img = "meme_images/furry100.jpg";
+        }
+
+        // Titolo
+        document.getElementById("question").innerHTML = "🚨 FURRY DETECTED 🚨";
+
+        // Svuota le risposte
+        document.getElementById("answers").innerHTML = "";
+
+        // Mostra risultato base
+        let resultHTML = `
+            <h2>${percentage}% furry</h2>
+            <p>${message}</p>
+            <img src="${img}">
+        `;
+
+        // Se sei al 100%, aggiungi anche il video
+        if (percentage === 100) {
+            resultHTML += `
+                <h3>JACKPOT 😭</h3>
+                    <video width="100%" controls autoplay>
+                        <source src="meme_images/Jackpot.mp4" type="video/mp4">
+                    </video>
+            `;
+        }
+
+        document.getElementById("result").innerHTML = resultHTML;
+
+        // Animazioni finali
+        document.body.classList.add("shake");
+        if (navigator.vibrate) navigator.vibrate([100,50,100]);
+        // puoi anche far partire un suono finale qui
+    };
+
+    loadQuestion();
+
+
+    function getRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+    }
+    </script>
+
+
+<audio id="clickSound" src="sound/click.mp3"></audio>
+<audio id="omgSound" src="sound/oh_my_god.mp3"></audio>
+<img id="speedImg" src="meme_images/shockedSpeed.jpg">
+
+</body>
+
+</html>
